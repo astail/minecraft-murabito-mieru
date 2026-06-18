@@ -1,0 +1,17 @@
+name: VillagerScope
+version: 1.0.0
+main: io.github.astail.villagerscope.VillagerScopePlugin
+description: "村人を見るだけで、その村人が提供している取引（コスト⇄結果）をサイドバーに一覧表示します。"
+api-version: '26.1.2'
+
+commands:
+  villagerscope:
+    description: "村人の取引表示（サイドバー）を ON/OFF します。"
+    usage: "/villagerscope [on|off|status]"
+    permission: villagerscope.use
+    permission-message: "§cこのコマンドを実行する権限がありません。"
+
+permissions:
+  villagerscope.use:
+    description: "取引表示と /villagerscope コマンドの使用を許可します。"
+    default: true
