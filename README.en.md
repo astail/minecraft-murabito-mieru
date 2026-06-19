@@ -138,7 +138,7 @@ mvn clean package
 
 ## Deploying to a Server
 
-Put the jar in the server's `plugins/` and restart. Two ways to get the jar:
+Put the jar in the server's `plugins/` and restart. There are two ways to get the jar (A/B); if you run Docker (itzg/minecraft-server), the "Docker Compose auto-download" below is also handy.
 
 ### A. Use a release build (no build needed, recommended)
 
@@ -163,6 +163,47 @@ docker restart <container>
 docker cp target/VillagerScope-1.0.0.jar <container>:/data/plugins/
 docker restart <container>
 ```
+
+### Docker Compose (itzg/minecraft-server) auto-download
+
+If you use the [`itzg/minecraft-server`](https://github.com/itzg/docker-minecraft-server) image, you don't have to place the jar yourself — just **list the release URL in the `PLUGINS` environment variable** and it's downloaded into `plugins/` on startup.
+
+```yaml
+services:
+  mc:
+    image: itzg/minecraft-server
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_CHANNEL: "experimental"
+      PLUGINS: |
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+```
+
+`PLUGINS` accepts multiple newline-separated URLs. Example alongside other plugins:
+
+```yaml
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_CHANNEL: "experimental"
+      PLUGINS: |
+        https://github.com/DiscordSRV/DiscordSRV/releases/download/v1.30.5/DiscordSRV-Build-1.30.5.jar
+        https://github.com/astail/minecraft-onpu/releases/download/v1.0.0/NoteScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+```
+
+- When you cut a new release, update the `v1.0.0` and filename in the URL (e.g. `.../download/v1.1.0/VillagerScope-1.1.0.jar`).
+- VillagerScope has no dependencies, so a single URL line is enough.
 
 If you see this in the startup log, it worked:
 

@@ -138,7 +138,7 @@ mvn clean package
 
 ## サーバーへの配置
 
-サーバーの `plugins/` に jar を置いてサーバーを再起動します。jar の入手方法は次の 2 通りです。
+サーバーの `plugins/` に jar を置いてサーバーを再起動します。jar の入手は次の 2 通り（A・B）です。Docker（itzg/minecraft-server）を使う場合は、後述の「Docker Compose で自動ダウンロード」も利用できます。
 
 ### A. リリース版を使う（ビルド不要・推奨）
 
@@ -166,6 +166,47 @@ docker restart <コンテナ名>
 docker cp target/VillagerScope-1.0.0.jar <コンテナ名>:/data/plugins/
 docker restart <コンテナ名>
 ```
+
+### Docker Compose（itzg/minecraft-server）で自動ダウンロード
+
+[`itzg/minecraft-server`](https://github.com/itzg/docker-minecraft-server) イメージを使う場合は、jar を手元に用意しなくても **`PLUGINS` 環境変数にリリースの URL を並べるだけ**で、起動時に自動ダウンロードして `plugins/` に配置できます。
+
+```yaml
+services:
+  mc:
+    image: itzg/minecraft-server
+    tty: true
+    stdin_open: true
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_CHANNEL: "experimental"
+      PLUGINS: |
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+```
+
+`PLUGINS` は改行区切りで複数指定できます。他プラグインと併用する例:
+
+```yaml
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "26.2"
+      PAPER_CHANNEL: "experimental"
+      PLUGINS: |
+        https://github.com/DiscordSRV/DiscordSRV/releases/download/v1.30.5/DiscordSRV-Build-1.30.5.jar
+        https://github.com/astail/minecraft-onpu/releases/download/v1.0.0/NoteScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+```
+
+- バージョンを更新したら、URL の `v1.0.0` とファイル名を新しいリリースに合わせて変更してください（例: `.../download/v1.1.0/VillagerScope-1.1.0.jar`）。
+- VillagerScope は依存プラグインなしで動くため、URL 1 行だけで導入できます。
 
 起動ログに以下が出れば成功です。
 
