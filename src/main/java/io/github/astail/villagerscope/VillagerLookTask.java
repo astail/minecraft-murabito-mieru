@@ -7,7 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * オンラインプレイヤーの視線を定期的に判定し、見ている先が村人（または行商人）なら
- * その取引一覧を頭上アイコンホログラムで表示するタスク。
+ * その取引一覧をサイドバーへ表示するタスク。
  */
 final class VillagerLookTask extends BukkitRunnable {
 
@@ -22,18 +22,18 @@ final class VillagerLookTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        TradeHologram hologram = plugin.hologram();
+        TradeSidebar sidebar = plugin.sidebar();
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             if (!player.hasPermission("villagerscope.use") || !plugin.isEnabledFor(player.getUniqueId())) {
-                hologram.hide(player); // 権限なし／OFF はその場で消す
+                sidebar.hide(player); // 権限なし／OFF はその場で消す
                 continue;
             }
             AbstractVillager villager = villagerInSight(player);
             if (villager == null) {
-                hologram.markAway(player); // 視線が外れたら猶予を置いて消す（ちらつき防止）
+                sidebar.markAway(player); // 視線が外れたら猶予を置いて消す（ちらつき防止）
                 continue;
             }
-            hologram.show(player, villager);
+            sidebar.show(player, villager);
         }
     }
 

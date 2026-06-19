@@ -9,7 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-/** /villagerscope … 自分の取引表示（頭上アイコン）を ON/OFF（引数なしはトグル）するコマンド。 */
+/** /villagerscope … 自分のサイドバー表示を ON/OFF（引数なしはトグル）するコマンド。 */
 public final class VillagerScopeCommand implements TabExecutor {
 
     private static final List<String> SUBCOMMANDS = List.of("on", "off", "status");
@@ -54,10 +54,10 @@ public final class VillagerScopeCommand implements TabExecutor {
     private void setAndReport(Player player, boolean enabled) {
         plugin.setEnabledFor(player.getUniqueId(), enabled);
         if (!enabled) {
-            plugin.hologram().hide(player); // 表示中なら即座に消す
+            plugin.sidebar().hide(player); // 表示中なら即座に消す
         }
         player.sendMessage(enabled
-                ? "§a取引表示を ON にしました。村人を見ると頭上にアイコン表示されます。"
+                ? "§a取引表示を ON にしました。村人を見るとサイドバーに表示されます。"
                 : "§7取引表示を OFF にしました。");
     }
 
