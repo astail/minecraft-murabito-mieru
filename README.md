@@ -131,7 +131,7 @@ JDK 25 と Maven が必要です（未導入なら `brew install openjdk@25 mave
 ./deploy.sh
 ```
 
-生成物: `target/VillagerScope-1.0.0.jar`
+生成物: `target/VillagerScope-1.1.0.jar`
 
 `deploy.sh` は内部で JDK 25 を指定して `mvn clean package` を実行します。
 別の場所の JDK を使う場合は `JAVA_HOME=/path/to/jdk25 ./deploy.sh` で上書きできます。直接ビルドするなら:
@@ -159,7 +159,7 @@ gh release download --repo astail/minecraft-murabito-mieru --pattern '*.jar'
 
 ### B. 自分でビルドする
 
-[ビルド](#ビルド) の手順で `target/VillagerScope-1.0.0.jar` を生成します。
+[ビルド](#ビルド) の手順で `target/VillagerScope-1.1.0.jar` を生成します。
 
 ### 配置
 
@@ -167,11 +167,11 @@ gh release download --repo astail/minecraft-murabito-mieru --pattern '*.jar'
 
 ```bash
 # バインドマウントしている場合（ホスト側 plugins ディレクトリへコピー）
-cp target/VillagerScope-1.0.0.jar /path/to/data/plugins/
+cp target/VillagerScope-1.1.0.jar /path/to/data/plugins/
 docker restart <コンテナ名>
 
 # 名前付きボリューム等の場合（コンテナへ直接コピー）
-docker cp target/VillagerScope-1.0.0.jar <コンテナ名>:/data/plugins/
+docker cp target/VillagerScope-1.1.0.jar <コンテナ名>:/data/plugins/
 docker restart <コンテナ名>
 ```
 
@@ -193,7 +193,7 @@ services:
       VERSION: "26.2"
       PAPER_CHANNEL: "experimental"
       PLUGINS: |
-        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.1.0/VillagerScope-1.1.0.jar
     volumes:
       - ./data:/data
     restart: unless-stopped
@@ -210,7 +210,7 @@ services:
       PLUGINS: |
         https://github.com/DiscordSRV/DiscordSRV/releases/download/v1.30.5/DiscordSRV-Build-1.30.5.jar
         https://github.com/astail/minecraft-onpu/releases/download/v1.0.0/NoteScope-1.0.0.jar
-        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.1.0/VillagerScope-1.1.0.jar
 ```
 
 - バージョンを更新したら、URL の `v1.0.0` とファイル名を新しいリリースに合わせて変更してください（例: `.../download/v1.1.0/VillagerScope-1.1.0.jar`）。

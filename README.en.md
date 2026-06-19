@@ -131,7 +131,7 @@ Build with the bundled `deploy.sh` (**no Docker needed**):
 ./deploy.sh
 ```
 
-Output: `target/VillagerScope-1.0.0.jar`
+Output: `target/VillagerScope-1.1.0.jar`
 
 `deploy.sh` runs `mvn clean package` with JDK 25 internally.
 Override with another JDK via `JAVA_HOME=/path/to/jdk25 ./deploy.sh`, or build directly:
@@ -158,17 +158,17 @@ gh release download --repo astail/minecraft-murabito-mieru --pattern '*.jar'
 
 ### B. Build it yourself
 
-Follow [Build](#build) to produce `target/VillagerScope-1.0.0.jar`.
+Follow [Build](#build) to produce `target/VillagerScope-1.1.0.jar`.
 
 ### Placement
 
 ```bash
 # bind mount (copy to the host-side plugins dir)
-cp target/VillagerScope-1.0.0.jar /path/to/data/plugins/
+cp target/VillagerScope-1.1.0.jar /path/to/data/plugins/
 docker restart <container>
 
 # named volume etc. (copy directly into the container)
-docker cp target/VillagerScope-1.0.0.jar <container>:/data/plugins/
+docker cp target/VillagerScope-1.1.0.jar <container>:/data/plugins/
 docker restart <container>
 ```
 
@@ -190,7 +190,7 @@ services:
       VERSION: "26.2"
       PAPER_CHANNEL: "experimental"
       PLUGINS: |
-        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.1.0/VillagerScope-1.1.0.jar
     volumes:
       - ./data:/data
     restart: unless-stopped
@@ -207,7 +207,7 @@ services:
       PLUGINS: |
         https://github.com/DiscordSRV/DiscordSRV/releases/download/v1.30.5/DiscordSRV-Build-1.30.5.jar
         https://github.com/astail/minecraft-onpu/releases/download/v1.0.0/NoteScope-1.0.0.jar
-        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.0.0/VillagerScope-1.0.0.jar
+        https://github.com/astail/minecraft-murabito-mieru/releases/download/v1.1.0/VillagerScope-1.1.0.jar
 ```
 
 - When you cut a new release, update the `v1.0.0` and filename in the URL (e.g. `.../download/v1.1.0/VillagerScope-1.1.0.jar`).
