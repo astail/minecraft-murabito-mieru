@@ -2,23 +2,28 @@
 
 [日本語](README.md) | **English**
 
-A Paper plugin that shows a villager's trades (cost → result) on the sidebar just by **looking at it** —
+A Paper plugin that shows a villager's trades (cost → result) **above its head as real item icons** just by **looking at it** —
 so you can tell what a villager buys and sells without opening the trading screen.
 
 ```text
-            司書 Lv3
- 紙 ×24             → エメラルド
- エメラルド ×9 + 本  → エンチャントの本 [入れ食い III]
- 本 ×4             → エメラルド ×5
- ガラス ×4          → エメラルド
+   ╭───────────────────────────╮
+   │          司書 Lv3          │   ← floats above the villager you look at
+   │ [paper]×24      →  [emrld] │      ([..] are real 3D item models)
+   │ [emrld]×9 [book] → [book] [Lure III]
+   │ [book]×4        →  [emrld]×5
+   │ [glass]×4       →  [emrld] │
+   ╰─────────────┬─────────────╯
+                 ▼
+              villager
 ```
 
 <!-- Add docs/screenshot.png once captured -->
 
 - **Title** (`司書 Lv3`) … the profession and level of the villager you're looking at (wandering traders show "行商人")
-- **Each row** (`cost → result`) … left is what you pay, right is what you get. `×N` is the amount
-- **Enchanted books** … the stored enchantment and level are shown, e.g. `[Lure III]`
-- **Out of stock** … trades awaiting restock are shown in gray with a strikethrough
+- **Each row** (`icon → icon`) … left is what you pay, right is what you get. Icons are real 3D item models; `×N` is the amount
+- **Enchanted books** … since the icon alone can't tell you the contents, the stored enchantment and level are shown as text, e.g. `[Lure III]`
+- **Out of stock** … trades awaiting restock are dimmed with a strikethrough on the text
+- **No resource pack** … rendered with display entities, so players install nothing (vanilla client is fine)
 
 > Item names are localized to the client's language (this example shows a Japanese client).
 
@@ -29,8 +34,8 @@ so you can tell what a villager buys and sells without opening the trading scree
 Normally you have to right-click a villager and open its trading screen to see what it offers.
 Opening them one by one while building a trading hall or hunting for a specific deal is tedious.
 
-VillagerScope ray-traces the player's line of sight and shows the trade list on the sidebar only while they're looking at a villager.
-Because it's a server-side plugin (not a client mod), **players need to install nothing** — it works on a vanilla client.
+VillagerScope ray-traces the player's line of sight and shows the trade list above the villager only while they're looking at it.
+Because it's a server-side plugin with display entities (not a client mod, not a resource pack), **players need to install nothing** — it works on a vanilla client.
 
 ---
 
@@ -51,19 +56,20 @@ Because it's a server-side plugin (not a client mod), **players need to install 
 ## Usage
 
 1. Drop the jar into the server's `plugins/` and restart (→ [Deploying to a Server](#deploying-to-a-server)).
-2. In-game, just **aim your crosshair at a villager** (or a wandering trader) — the trade list appears on the sidebar.
+2. In-game, just **aim your crosshair at a villager** (or a wandering trader) — the trade list appears above its head.
 3. Turn it off with `/villagerscope off`, back on with `/villagerscope on`.
 
 ### Reading the display
 
 | Field | Meaning |
 | --- | --- |
-| `司書 Lv3` | Sidebar title: profession + trade level (1–5) |
-| `紙 ×24 → エメラルド` | One trade. Left is what you **pay**, right is what you **get** |
-| `エメラルド ×9 + 本 → …` | Trades that cost two items are joined with ` + ` |
-| `… [Lure III]` | Stored enchantment and level for enchanted books |
-| Gray + strikethrough | **Out of stock** (locked until the villager restocks) |
+| `司書 Lv3` | Hologram title: profession + trade level (1–5) |
+| `[icon]×24 → [icon]` | One trade. Left is what you **pay**, right is what you **get** (icons are real 3D item models) |
+| `[icon] + [icon] → …` | Trades that cost two items are joined with ` + ` |
+| `… [Lure III]` | Stored enchantment and level for enchanted books (shown as text next to the icon) |
+| Dimmed icon + strikethrough | **Out of stock** (locked until the villager restocks) |
 | `取引なし` | Villagers with no trades (unemployed, nitwit, baby) |
+| `ほか N 件` | When a villager has many trades, the count beyond the 10-row display limit |
 
 ---
 
@@ -103,11 +109,13 @@ lp user <name> permission set villagerscope.use false
 ## How It Works (technical notes)
 
 - **Line-of-sight check**: every 4 ticks (~0.2 s) it loops over online players and casts `getTargetEntity(8)` from the eye. Blocks in front occlude it (it won't show through walls), and if the hit entity is an `AbstractVillager` (villager or wandering trader), it shows the trades.
-- **Reading trades**: `AbstractVillager#getRecipes()` returns the `MerchantRecipe` list; each row is built from `getIngredients()` (cost, 1–2 items) and `getResult()` (result). A trade with `getUses() >= getMaxUses()` is out of stock and rendered gray with a strikethrough.
-- **Display**: each player gets a dedicated scoreboard shown in the `DisplaySlot.SIDEBAR` slot. Each line is drawn straight from an Adventure Component via `Score#customName(Component)`, and `Objective#numberFormat(NumberFormat.blank())` hides the red score numbers on the right. Item names use the translatable `ItemStack#effectiveName()` and enchantments use `Enchantment#displayName(level)`, so everything is localized to the client's language.
-- **Diff updates**: a cheap signature is computed from the looked-at villager's trade data, and the scoreboard is rebuilt **only when it changes**. While you keep looking at the same villager, nothing is re-rendered — avoiding flicker and overhead.
-- **Grace period**: the display lingers ~0.6 s after you look away, so small aim jitter doesn't make the sidebar flicker. It clears when you keep looking away or run `/villagerscope off`.
-- **Performance**: the cost is mainly `interval × online players × one ray trace` (5×/second, up to 8 blocks). Scoreboard rebuilds happen only the moment content changes, so staring at a villager adds very little. The ray trace and entity reads touch world state, so they run on the main thread (`runTaskTimer`).
+- **Reading trades**: `AbstractVillager#getRecipes()` returns the `MerchantRecipe` list; each row is built from `getIngredients()` (cost, 1–2 items) and `getResult()` (result). A trade with `getUses() >= getMaxUses()` is out of stock, with the icon dimmed and a strikethrough on the text.
+- **Display**: for each player, display entities are spawned above the villager they look at (`ItemDisplay` for icons, `TextDisplay` for `×N`, `→`, and enchantments). All elements share one anchor location and are laid out on a grid via `Display.Billboard.CENTER` + `Transformation` (translation/scale), so the panel always faces the player and never skews from any angle. Icons render the `ItemStack` directly (**no resource pack**), and enchantment names use `Enchantment#displayName(level)`, so they are localized to the client's language.
+- **Per-player visibility**: spawned entities are hidden from everyone except the owner via `Player#hideEntity(...)` (and from players who join later), so the per-player on/off and "only the viewer sees it" behavior is preserved.
+- **Diff updates & following**: a cheap signature is computed from the looked-at villager's trade data, and the hologram is rebuilt **only when it changes**. When the villager moves, the anchor is teleported (interpolated via `setTeleportDuration`) so it follows smoothly. While you keep looking at the same villager, nothing is respawned — avoiding flicker and overhead.
+- **Grace period**: the display lingers ~0.6 s after you look away, so small aim jitter doesn't make it flicker. It clears when you keep looking away or run `/villagerscope off`.
+- **Cleanup**: display entities are removed on look-away, quit, off, and `onDisable`. Each entity is tagged, and on `onEnable` all worlds are swept to remove any leftovers (orphans from a crash).
+- **Performance**: the cost is mainly `interval × online players × one ray trace` (5×/second, up to 8 blocks). Hologram respawns happen only the moment content changes, so staring at a villager adds very little. The ray trace and entity operations touch world state, so they run on the main thread (`runTaskTimer`).
 - **It never modifies villagers** (read-only).
 
 > The line-of-sight task runs on Bukkit's global scheduler (`runTaskTimer`), so the target is **Paper** (not Folia).
@@ -208,7 +216,7 @@ services:
 If you see this in the startup log, it worked:
 
 ```text
-[VillagerScope] VillagerScope を有効化しました。村人を見ると取引がサイドバーに表示されます。
+[VillagerScope] VillagerScope を有効化しました。村人を見ると取引が頭上にアイコン表示されます。
 ```
 
 ---
@@ -222,10 +230,10 @@ If you see this in the startup log, it worked:
 ├── README.md
 └── src/main/
     ├── java/io/github/astail/villagerscope/
-    │   ├── VillagerScopePlugin.java   # entry point (commands, task startup, quit cleanup)
-    │   ├── VillagerLookTask.java      # line-of-sight check → show/hide the sidebar
-    │   ├── TradeSidebar.java          # per-player scoreboard management (diff updates, grace)
-    │   ├── TradeFormatter.java        # trade data → display Components
+    │   ├── VillagerScopePlugin.java   # entry point (commands, task startup, join/quit cleanup, startup sweep)
+    │   ├── VillagerLookTask.java      # line-of-sight check → show/hide the hologram
+    │   ├── TradeHologram.java         # per-player overhead icon display-entity management (diff updates, following, grace, cleanup)
+    │   ├── TradeFormatter.java        # trade data → display model (rows, enchantments, signature)
     │   └── VillagerScopeCommand.java  # /villagerscope (on/off toggle)
     └── resources/plugin.yml
 ```
@@ -237,7 +245,8 @@ If you see this in the startup log, it worked:
 ## Notes
 
 - **Nothing showing?** Check that your crosshair is actually on the villager (within 8 blocks, nothing in front), that `/villagerscope status` is on, and that you have the `villagerscope.use` permission.
-- **Sidebar conflicts**: a player can only show one sidebar at a time. If another plugin uses the scoreboard sidebar, this plugin takes over while you look at a villager and returns you to the **main scoreboard** afterward (it does not restore another plugin's sidebar automatically).
+- **No scoreboard conflict**: because it uses display entities, it does not interfere with other plugins that use the scoreboard sidebar.
+- **Villagers with many trades**: the display shows up to 10 rows; anything beyond that is summarized as "ほか N 件".
 - **About prices**: the display shows each trade's **base cost**. It does not reflect demand-based price increases or discounts from the Hero of the Village effect / curing a zombie villager.
 - **Wandering traders too**: trades of wandering traders are shown the same way as villagers.
 - The `paper-api` build number can track server updates (e.g. `26.1.2.build.70-stable`).
