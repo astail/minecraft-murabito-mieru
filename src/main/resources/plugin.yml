@@ -2,7 +2,7 @@ name: VillagerScope
 version: 1.2.0
 main: io.github.astail.villagerscope.VillagerScopePlugin
 description: "村人を見るだけで、その村人が提供している取引（コスト⇄結果）をサイドバーに一覧表示します。"
-api-version: '26.1.2'
+api-version: '26.2'
 
 commands:
   villagerscope:

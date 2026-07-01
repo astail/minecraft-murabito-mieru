@@ -38,7 +38,7 @@ Because it's a server-side plugin (not a client mod), **players need to install 
 
 | Item | Version |
 | --- | --- |
-| Server | Paper **26.1.2** (verified on build 69) |
+| Server | Paper **26.2** (experimental channel) |
 | Java | **25** (verified on 25.0.x) |
 | Build | JDK 25 + Maven (`brew install openjdk@25 maven`) |
 | Dependencies | **None** |
@@ -240,4 +240,4 @@ If you see this in the startup log, it worked:
 - **Sidebar conflicts**: a player can only show one sidebar at a time. If another plugin uses the scoreboard sidebar, this plugin takes over while you look at a villager and returns you to the **main scoreboard** afterward (it does not restore another plugin's sidebar automatically).
 - **About prices**: the display shows each trade's **base cost**. It does not reflect demand-based price increases or discounts from the Hero of the Village effect / curing a zombie villager.
 - **Wandering traders too**: trades of wandering traders are shown the same way as villagers.
-- The `paper-api` build number can track server updates (e.g. `26.1.2.build.70-stable`).
+- The `paper-api` build number can track server updates (e.g. `26.2.build.41-alpha`).
